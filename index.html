@@ -127,7 +127,7 @@
             border-left: 2px solid #808080;
             border-right: 2px solid #ffffff;
             border-bottom: 2px solid #ffffff;
-            height: 240px;
+            height: 260px;
             overflow-y: auto;
             white-space: pre-wrap;
         }
@@ -137,7 +137,7 @@
 
 <div class="win2k-window">
     <div class="title-bar">
-        <span class="title-text">🍸 COCKTAIL BUDGET & SAFETY PLANNER v2.00</span>
+        <span class="title-text">🍸 COCKTAIL BUDGET & SAFETY PLANNER v2.50</span>
         <span style="font-family: monospace; font-size: 10px; background: #d4d0c8; color: black; padding: 0 4px; border: 1px solid black; cursor: pointer;">X</span>
     </div>
     
@@ -155,14 +155,15 @@
         </fieldset>
 
         <fieldset>
-            <legend>2. Configuration du Cocktail</legend>
+            <legend>2. Configuration du Cocktail (Proportions globales)</legend>
             <div class="form-group">
                 <label for="premade">Recettes d'usine :</label>
                 <select id="premade" onchange="loadPremade()">
                     <option value="custom">-- Assemblage Manuel --</option>
-                    <option value="cubalibre">Cuba Libre</option>
-                    <option value="vodkaorange">Vodka Orange</option>
-                    <option value="gintonic">Gin Tonic</option>
+                    <option value="cubalibre">Cuba Libre (1L / 4L)</option>
+                    <option value="vodkaorange">Vodka Orange (1L / 3L)</option>
+                    <option value="vodkapomme">Vodka Pomme (1L / 3L)</option>
+                    <option value="vodkaenergy">Vodka Energy (1L / 3L)</option>
                 </select>
             </div>
             
@@ -176,22 +177,22 @@
                     <option value="Vodka">Vodka</option>
                     <option value="Whisky">Whisky</option>
                 </select>
-                <label style="width: 100px; text-align: right; padding-right: 5px;" for="vol_alc">Vol/Verre (L) :</label>
-                <input type="number" id="vol_alc" value="0.05" step="0.01" min="0">
+                <label style="width: 120px; text-align: right; padding-right: 5px;" for="prop_alc">Proportion Alcool (L) :</label>
+                <input type="number" id="prop_alc" value="1.0" step="0.1" min="0">
             </div>
 
             <div class="form-group">
                 <label for="soft">Diluant / Soft :</label>
-                <select id="soft">
-                    <option value="N/A">N/A</option>
+                <select id="soft" onchange="toggleSoftInput()">
+                    <option value="N/A">N/A (Pas de soft)</option>
                     <option value="Cola">Cola</option>
                     <option value="Boisson énergisante">Boisson énergisante</option>
                     <option value="Jus d'orange">Jus d'orange</option>
                     <option value="Jus de pomme">Jus de pomme</option>
                     <option value="Eau Gazeuse">Eau Gazeuse</option>
                 </select>
-                <label style="width: 100px; text-align: right; padding-right: 5px;" for="vol_soft">Vol/Verre (L) :</label>
-                <input type="number" id="vol_soft" value="0.20" step="0.01" min="0">
+                <label style="width: 120px; text-align: right; padding-right: 5px;" for="prop_soft">Proportion Soft (L) :</label>
+                <input type="number" id="prop_soft" value="3.0" step="0.1" min="0">
             </div>
         </fieldset>
 
@@ -209,7 +210,6 @@ Veuillez configurer vos variables et cliquer sur Exécuter...</div>
     // ==========================================
     // CONFIGURATION DES PRIX EN DUR (BASE DE DONNÉES)
     // ==========================================
-    // Modifiez les valeurs ci-dessous pour mettre à jour les prix au Litre
     const PRICES = {
         // Alcools
         "Rhum": 13.79,
@@ -220,26 +220,42 @@ Veuillez configurer vos variables et cliquer sur Exécuter...</div>
         "Cola": 1.40,
         "Jus d'orange": 0.97,
         "Eau Gazeuse": 0.22,
-        "Boisson énergisante": 2.06
+        "Boisson énergisante": 2.06,
         "Jus de pomme": 0.69
     };
 
-    // Recettes pré-enregistrées d'usine
+    // Recettes d'usine basées sur des ratios globaux faciles (Ex: 1L pour 3L ou 4L)
     const PREMADE_COCKTAILS = {
-        "cubalibre": { alcool: "Rhum", vol_alc: 0.05, soft: "Cola", vol_soft: 0.20 },
-        "vodkaorange": { alcool: "Vodka", vol_alc: 0.06, soft: "Jus d'orange", vol_soft: 0.19 },
-        "vodkapomme": { alcool: "Vodka", vol_alc: 0.06, soft: "Jus de pomme", vol_soft: 0.19 },
-        "vodkaenergy": { alcool: "Vodka", vol_alc: 0.06, soft: "Boisson énergisante", vol_soft: 0.19 },
+        "cubalibre": { alcool: "Rhum", prop_alc: 1.0, soft: "Cola", prop_soft: 4.0 },
+        "vodkaorange": { alcool: "Vodka", prop_alc: 1.0, soft: "Jus d'orange", prop_soft: 3.0 },
+        "vodkapomme": { alcool: "Vodka", prop_alc: 1.0, soft: "Jus de pomme", prop_soft: 3.0 },
+        "vodkaenergy": { alcool: "Vodka", prop_alc: 1.0, soft: "Boisson énergisante", prop_soft: 3.0 },
     };
+
+    // Contenance arbitraire standard d'un verre de fête (25 cl soit 0.25 Litre)
+    const CONTENANCE_VERRE = 0.25;
 
     function loadPremade() {
         const choice = document.getElementById("premade").value;
         if (choice !== "custom" && PREMADE_COCKTAILS[choice]) {
             const recipe = PREMADE_COCKTAILS[choice];
             document.getElementById("alcool").value = recipe.alcool;
-            document.getElementById("vol_alc").value = recipe.vol_alc;
+            document.getElementById("prop_alc").value = recipe.prop_alc;
             document.getElementById("soft").value = recipe.soft;
-            document.getElementById("vol_soft").value = recipe.vol_soft;
+            document.getElementById("prop_soft").value = recipe.prop_soft;
+        }
+        toggleSoftInput();
+    }
+
+    function toggleSoftInput() {
+        const softValue = document.getElementById("soft").value;
+        const propSoftInput = document.getElementById("prop_soft");
+        if (softValue === "N/A") {
+            propSoftInput.value = "0";
+            propSoftInput.disabled = true;
+        } else {
+            if(propSoftInput.value == "0") propSoftInput.value = "3.0";
+            propSoftInput.disabled = false;
         }
     }
 
@@ -248,71 +264,91 @@ Veuillez configurer vos variables et cliquer sur Exécuter...</div>
         const guests = parseInt(document.getElementById("guests").value);
         const drinksPerPerson = parseInt(document.getElementById("drinks").value);
         const selectedAlc = document.getElementById("alcool").value;
-        const volAlcPerGlass = parseFloat(document.getElementById("vol_alc").value);
+        const propAlc = parseFloat(document.getElementById("prop_alc").value);
         const selectedSoft = document.getElementById("soft").value;
-        const volSoftPerGlass = parseFloat(document.getElementById("vol_soft").value);
+        let propSoft = parseFloat(document.getElementById("prop_soft").value);
 
-        // Validation basique de sécurité
-        if (isNaN(guests) || isNaN(drinksPerPerson) || isNaN(volAlcPerGlass) || isNaN(volSoftPerGlass)) {
-            alert("Erreur critique : Données de calcul corrompues ou manquantes.");
+        if (selectedSoft === "N/A") {
+            propSoft = 0;
+        }
+
+        // Sécurité de division par zéro
+        if (isNaN(guests) || isNaN(drinksPerPerson) || isNaN(propAlc) || isNaN(propSoft) || (propAlc + propSoft) === 0) {
+            alert("Erreur critique : Données manquantes ou proportions à zéro.");
             return;
         }
 
-        // --- CALCULS LOGISTIQUES ---
+        // --- CALCUL DES PARTS DE LA RECETTE ---
+        const totalProportion = propAlc + propSoft; 
+        const pourcentageAlcool = propAlc / totalProportion;
+        const pourcentageSoft = propSoft / totalProportion;
+
+        // Volume d'un seul verre décomposé (basé sur 0.25L de contenance)
+        const volAlcPerGlass = CONTENANCE_VERRE * pourcentageAlcool;
+        const volSoftPerGlass = CONTENANCE_VERRE * pourcentageSoft;
+
+        // --- CALCULS LOGISTIQUES LOGICIEL ---
         const totalGlasses = guests * drinksPerPerson;
-        const totalAlcUnits = totalGlasses * volAlcPerGlass;
-        const totalSoftUnits = totalGlasses * volSoftPerGlass;
+        const totalAlcRequired = totalGlasses * volAlcPerGlass;
+        const totalSoftRequired = totalGlasses * volSoftPerGlass;
 
         // --- CALCULS FINANCIERS ---
-        const costAlc = totalAlcUnits * PRICES[selectedAlc];
-        const costSoft = totalSoftUnits * PRICES[selectedSoft];
+        const costAlc = totalAlcRequired * PRICES[selectedAlc];
+        const costSoft = selectedSoft !== "N/A" ? (totalSoftRequired * PRICES[selectedSoft]) : 0;
         const totalBudget = costAlc + costSoft;
 
         // --- ANALYSE UNITÉS D'ALCOOL (SANTÉ) ---
-        // Hypothèse : Alcool fort standard à 40° (Vol * 0.40 * 0.8 de densité / 10g) => Vol(L) * 32
-        const grammesAlcoolParVerre = volAlcPerGlass * 1000 * 0.40 * 0.8;
-        const unitsPerGlass = grammesAlcoolParVerre / 10;
+        // Bière estimée à 5°, Alcools forts (Rhum, Vodka, Whisky) estimés à 40°
+        const degre = (selectedAlc === "Bière") ? 0.05 : 0.40;
+        const grammesAlcoolParVerre = volAlcPerGlass * 1000 * degre * 0.8; // 0.8 = densité éthanol
+        const unitsPerGlass = grammesAlcoolParVerre / 10; // 1 unité = 10g d'alcool pur
         const totalSessionUnits = unitsPerGlass * drinksPerPerson;
 
-        // Logique d'alerte personnalisée
+        // Logique d'alerte rétro personnalisée
         let alertStatus = "";
         if (totalSessionUnits === 0) {
-            alertStatus = "⚠️ ALERTE : AUCUN ALCOOL DÉTECTÉ (0 unité).";
+            alertStatus = "⚠️ ALERTE : AUCUN ALCOOL INTRODUIT DANS LE SYSTÈME.";
         } else if (totalSessionUnits < 2.0) {
-            alertStatus = "⚠️ ALERTE : Seuil d'ambiance critique (Risque de soirée trop sobre/calme !)";
+            alertStatus = "⚠️ ALERTE : Seuil de dynamisme critique (Risque de soirée trop calme !)";
         } else if (totalSessionUnits > 6.0) {
-            alertStatus = "🚨 ALERTE ROUGE : Surconsommation dangereuse ! Risques médicaux élevés.";
+            alertStatus = "🚨 ALERTE ROUGE : Surconsommation critique ! Risque sanitaire élevé.";
         } else {
-            alertStatus = "✅ STATUT : Consommation dans la norme standard (Modérée).";
+            alertStatus = "✅ STATUT : Consommation logique, conforme aux normes (Modérée).";
         }
 
-        // --- GÉNÉRATION DU RAPPORT TEXTE ---
+        // --- ENCOSTRAGE DU RAPPORT TEXTE ---
         const pad = (str, len) => str.padEnd(len, ' ');
         
+        let softRequiredText = selectedSoft !== "N/A" ? `${totalSoftRequired.toFixed(2)} Litres` : "0.00 Litres (N/A)";
+        let softCostText = selectedSoft !== "N/A" ? `${costSoft.toFixed(2)} EUR (Tarif : ${PRICES[selectedSoft].toFixed(2)}€/L)` : "0.00 EUR";
+
         const report = `===========================================================
-  RAPPORT DE PLANIFICATION DE SOIRÉE - RETRO_CALC v2.00
+  RAPPORT DE PLANIFICATION DE SOIRÉE - RETRO_CALC v2.50
 ===========================================================
-[PARAMÈTRES SÉLECTIONNÉS]
+[RECETTE CONFIGURÉE]
+Ratio volumétrique    : ${propAlc} L d'alcool pour ${propSoft} L de soft
+Profil du verre       : ${(pourcentageAlcool * 100).toFixed(0)}% Alcool / ${(pourcentageSoft * 100).toFixed(0)}% Soft (Sur base de 25cl)
+
+[PARAMÈTRES LOGISTIQUES]
 Nombre d'invités      : ${guests} personnes
 Verres par personne   : ${drinksPerPerson} verres
-Volume total produit  : ${totalGlasses} unités de service
+Volume total produit  : ${totalGlasses} verres à servir
 
 [VOLUMES MATIÈRES PREMIÈRES REQUIS]
--> TOTAL ${pad(selectedAlc.toUpperCase(), 12)} : ${totalAlcUnits.toFixed(2)} Litres
--> TOTAL ${pad(selectedSoft.toUpperCase(), 12)} : ${totalSoftUnits.toFixed(2)} Litres
+-> TOTAL ${pad(selectedAlc.toUpperCase(), 12)} : ${totalAlcRequired.toFixed(2)} Litres
+-> TOTAL ${pad(selectedSoft.toUpperCase(), 12)} : ${softRequiredText}
 
 [ANALYSE BUDGÉTAIRE SEGMENTÉE]
 > Coût ${pad(selectedAlc, 14)}: ${costAlc.toFixed(2)} EUR (Tarif : ${PRICES[selectedAlc].toFixed(2)}€/L)
-> Coût ${pad(selectedSoft, 14)}: ${costSoft.toFixed(2)} EUR (Tarif : ${PRICES[selectedSoft].toFixed(2)}€/L)
+> Coût ${pad(selectedSoft, 14)}: ${softCostText}
 -----------------------------------------------------------
->> BUDGET GLOBAL UNIQUE   : ${totalBudget.toFixed(2)} EUR
+>> BUDGET GLOBAL REQUIS   : ${totalBudget.toFixed(2)} EUR
 
 [DIAGNOSTIC SANTÉ & PRÉVENTION]
 Unités d'alcool cumulées / personne : ${totalSessionUnits.toFixed(1)} unités
 ${alertStatus}
 ===========================================================`;
 
-        // Écriture dans le bloc de console virtuel
         document.getElementById("console").textContent = report;
     }
 </script>
