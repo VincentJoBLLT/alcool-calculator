@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>BAR-MASTER 2000 Pro - [Party_Planner.exe]</title>
+    <style>
+        /* --- STYLE RÉTRO WINDOWS 2000 --- */
+        body {
+            background-color: #3a6ea5; /* Le fameux fond d'écran bleu-vert mythique */
+            font-family: "MS Sans Serif", "Tahoma", Arial, sans-serif;
+            font-size: 12px;
+            color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .win2k-window {
+            background-color: #d4d0c8;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #808080;
+            border-bottom: 2px solid #808080;
+            box-shadow: 1px 1px 0px #000000;
+            width: 650px;
+            padding: 2px;
+        }
+
+        .title-bar {
+            background: linear-gradient(90deg, #000080, #1080d0);
+            color: #ffffff;
+            padding: 3px 5px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title-text {
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .window-body {
+            padding: 10px;
+        }
+
+        fieldset {
+            border: 2px solid #808080;
+            border-top-color: #808080;
+            border-left-color: #808080;
+            border-right-color: #ffffff;
+            border-bottom-color: #ffffff;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        legend {
+            font-weight: bold;
+            padding: 0 5px;
+        }
+
+        .form-group {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        label {
+            width: 180px;
+            display: inline-block;
+        }
+
+        input[type="number"], select {
+            background-color: #ffffff;
+            border-top: 2px solid #808080;
+            border-left: 2px solid #808080;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            padding: 2px;
+            font-family: inherit;
+            font-size: 12px;
+            box-sizing: border-box;
+        }
+
+        input[type="number"] {
+            width: 80px;
+        }
+
+        select {
+            width: 160px;
+        }
+
+        .btn-calc {
+            width: 100%;
+            background-color: #d4d0c8;
+            border-top: 2px solid #ffffff;
+            border-left: 2px solid #ffffff;
+            border-right: 2px solid #808080;
+            border-bottom: 2px solid #808080;
+            padding: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 0;
+            box-shadow: 1px 1px 0px #000000;
+        }
+
+        .btn-calc:active {
+            border-top: 2px solid #808080;
+            border-left: 2px solid #808080;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            box-shadow: none;
+            padding: 7px 5px 5px 7px;
+        }
+
+        /* Console Dos / Terminal pour les résultats */
+        .console-output {
+            background-color: #000000;
+            color: #00ff00;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 12px;
+            padding: 10px;
+            border-top: 2px solid #808080;
+            border-left: 2px solid #808080;
+            border-right: 2px solid #ffffff;
+            border-bottom: 2px solid #ffffff;
+            height: 240px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="win2k-window">
+    <div class="title-bar">
+        <span class="title-text">🍸 COCKTAIL BUDGET & SAFETY PLANNER v2.00</span>
+        <span style="font-family: monospace; font-size: 10px; background: #d4d0c8; color: black; padding: 0 4px; border: 1px solid black; cursor: pointer;">X</span>
+    </div>
+    
+    <div class="window-body">
+        <fieldset>
+            <legend>1. Paramètres de l'événement</legend>
+            <div class="form-group">
+                <label for="guests">Nombre d'invités :</label>
+                <input type="number" id="guests" value="20" min="1">
+            </div>
+            <div class="form-group">
+                <label for="drinks">Verres par personne :</label>
+                <input type="number" id="drinks" value="4" min="1">
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>2. Configuration du Cocktail</legend>
+            <div class="form-group">
+                <label for="premade">Recettes d'usine :</label>
+                <select id="premade" onchange="loadPremade()">
+                    <option value="custom">-- Assemblage Manuel --</option>
+                    <option value="cubalibre">Cuba Libre</option>
+                    <option value="vodkaorange">Vodka Orange</option>
+                    <option value="gintonic">Gin Tonic</option>
+                </select>
+            </div>
+            
+            <hr style="border: 0; border-top: 1px solid #808080; border-bottom: 1px solid #ffffff; margin: 10px 0;">
+            
+            <div class="form-group">
+                <label for="alcool">Alcool Principal :</label>
+                <select id="alcool">
+                    <option value="Rhum">Rhum</option>
+                    <option value="Vodka">Vodka</option>
+                    <option value="Gin">Gin</option>
+                    <option value="Whisky">Whisky</option>
+                </select>
+                <label style="width: 100px; text-align: right; padding-right: 5px;" for="vol_alc">Vol/Verre (L) :</label>
+                <input type="number" id="vol_alc" value="0.05" step="0.01" min="0">
+            </div>
+
+            <div class="form-group">
+                <label for="soft">Diluant / Soft :</label>
+                <select id="soft">
+                    <option value="Cola">Cola</option>
+                    <option value="Jus d'orange">Jus d'orange</option>
+                    <option value="Eau Gazeuse">Eau Gazeuse</option>
+                    <option value="Tonic">Tonic</option>
+                </select>
+                <label style="width: 100px; text-align: right; padding-right: 5px;" for="vol_soft">Vol/Verre (L) :</label>
+                <input type="number" id="vol_soft" value="0.20" step="0.01" min="0">
+            </div>
+        </fieldset>
+
+        <button class="btn-calc" onclick="calculateData()">[ EXÉCUTER LE CALCUL ]</button>
+
+        <fieldset>
+            <legend>3. Rapport Système / Analyse de données</legend>
+            <div class="console-output" id="console">--- SYSTEM READY ---
+Veuillez configurer vos variables et cliquer sur Exécuter...</div>
+        </fieldset>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // CONFIGURATION DES PRIX EN DUR (BASE DE DONNÉES)
+    // ==========================================
+    // Modifiez les valeurs ci-dessous pour mettre à jour les prix au Litre
+    const PRICES = {
+        // Alcools
+        "Rhum": 22.50,
+        "Vodka": 19.90,
+        "Gin": 24.00,
+        "Whisky": 26.00,
+        // Softs
+        "Cola": 1.80,
+        "Jus d'orange": 2.20,
+        "Eau Gazeuse": 1.10,
+        "Tonic": 2.50
+    };
+
+    // Recettes pré-enregistrées d'usine
+    const PREMADE_COCKTAILS = {
+        "cubalibre": { alcool: "Rhum", vol_alc: 0.05, soft: "Cola", vol_soft: 0.20 },
+        "vodkaorange": { alcool: "Vodka", vol_alc: 0.06, soft: "Jus d'orange", vol_soft: 0.19 },
+        "gintonic": { alcool: "Gin", vol_alc: 0.05, soft: "Tonic", vol_soft: 0.20 }
+    };
+
+    function loadPremade() {
+        const choice = document.getElementById("premade").value;
+        if (choice !== "custom" && PREMADE_COCKTAILS[choice]) {
+            const recipe = PREMADE_COCKTAILS[choice];
+            document.getElementById("alcool").value = recipe.alcool;
+            document.getElementById("vol_alc").value = recipe.vol_alc;
+            document.getElementById("soft").value = recipe.soft;
+            document.getElementById("vol_soft").value = recipe.vol_soft;
+        }
+    }
+
+    function calculateData() {
+        // Récupération des entrées
+        const guests = parseInt(document.getElementById("guests").value);
+        const drinksPerPerson = parseInt(document.getElementById("drinks").value);
+        const selectedAlc = document.getElementById("alcool").value;
+        const volAlcPerGlass = parseFloat(document.getElementById("vol_alc").value);
+        const selectedSoft = document.getElementById("soft").value;
+        const volSoftPerGlass = parseFloat(document.getElementById("vol_soft").value);
+
+        // Validation basique de sécurité
+        if (isNaN(guests) || isNaN(drinksPerPerson) || isNaN(volAlcPerGlass) || isNaN(volSoftPerGlass)) {
+            alert("Erreur critique : Données de calcul corrompues ou manquantes.");
+            return;
+        }
+
+        // --- CALCULS LOGISTIQUES ---
+        const totalGlasses = guests * drinksPerPerson;
+        const totalAlcUnits = totalGlasses * volAlcPerGlass;
+        const totalSoftUnits = totalGlasses * volSoftPerGlass;
+
+        // --- CALCULS FINANCIERS ---
+        const costAlc = totalAlcUnits * PRICES[selectedAlc];
+        const costSoft = totalSoftUnits * PRICES[selectedSoft];
+        const totalBudget = costAlc + costSoft;
+
+        // --- ANALYSE UNITÉS D'ALCOOL (SANTÉ) ---
+        // Hypothèse : Alcool fort standard à 40° (Vol * 0.40 * 0.8 de densité / 10g) => Vol(L) * 32
+        const grammesAlcoolParVerre = volAlcPerGlass * 1000 * 0.40 * 0.8;
+        const unitsPerGlass = grammesAlcoolParVerre / 10;
+        const totalSessionUnits = unitsPerGlass * drinksPerPerson;
+
+        // Logique d'alerte personnalisée
+        let alertStatus = "";
+        if (totalSessionUnits === 0) {
+            alertStatus = "⚠️ ALERTE : AUCUN ALCOOL DÉTECTÉ (0 unité).";
+        } else if (totalSessionUnits < 2.0) {
+            alertStatus = "⚠️ ALERTE : Seuil d'ambiance critique (Risque de soirée trop sobre/calme !)";
+        } else if (totalSessionUnits > 6.0) {
+            alertStatus = "🚨 ALERTE ROUGE : Surconsommation dangereuse ! Risques médicaux élevés.";
+        } else {
+            alertStatus = "✅ STATUT : Consommation dans la norme standard (Modérée).";
+        }
+
+        // --- GÉNÉRATION DU RAPPORT TEXTE ---
+        const pad = (str, len) => str.padEnd(len, ' ');
+        
+        const report = `===========================================================
+  RAPPORT DE PLANIFICATION DE SOIRÉE - RETRO_CALC v2.00
+===========================================================
+[PARAMÈTRES SÉLECTIONNÉS]
+Nombre d'invités      : ${guests} personnes
+Verres par personne   : ${drinksPerPerson} verres
+Volume total produit  : ${totalGlasses} unités de service
+
+[VOLUMES MATIÈRES PREMIÈRES REQUIS]
+-> TOTAL ${pad(selectedAlc.toUpperCase(), 12)} : ${totalAlcUnits.toFixed(2)} Litres
+-> TOTAL ${pad(selectedSoft.toUpperCase(), 12)} : ${totalSoftUnits.toFixed(2)} Litres
+
+[ANALYSE BUDGÉTAIRE SEGMENTÉE]
+> Coût ${pad(selectedAlc, 14)}: ${costAlc.toFixed(2)} EUR (Tarif : ${PRICES[selectedAlc].toFixed(2)}€/L)
+> Coût ${pad(selectedSoft, 14)}: ${costSoft.toFixed(2)} EUR (Tarif : ${PRICES[selectedSoft].toFixed(2)}€/L)
+-----------------------------------------------------------
+>> BUDGET GLOBAL UNIQUE   : ${totalBudget.toFixed(2)} EUR
+
+[DIAGNOSTIC SANTÉ & PRÉVENTION]
+Unités d'alcool cumulées / personne : ${totalSessionUnits.toFixed(1)} unités
+${alertStatus}
+===========================================================`;
+
+        // Écriture dans le bloc de console virtuel
+        document.getElementById("console").textContent = report;
+    }
+</script>
+</body>
+</html>
